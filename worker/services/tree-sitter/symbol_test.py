@@ -5,7 +5,7 @@ parser = ParserService()
 extractor = SymbolExtractor()
 
 result = parser.parse_file(
-    "services/tree-sitter/sample.py"
+    "services/tree-sitter/sample.jsx"
 )
 
 symbols = extractor.extract(result)
