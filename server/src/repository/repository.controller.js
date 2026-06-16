@@ -97,17 +97,17 @@ export const getRepositoryOverview = async (req, res) => {
         (tech) => tech.technology_name
       ),
     });
-    
+
 
   } catch (error) {
     console.error(error);
 
-    
+
     return res.status(500).json({
       success: false,
       message: "Failed to fetch repository overview",
     });
-    
+
 
   }
 };
@@ -142,3 +142,47 @@ export const getRepositoryTree = async (req, res) => {
     });
   }
 };
+
+export const getRepositoryFiles = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+
+    const result = await pool.query(
+      `
+  SELECT
+    id,
+    file_name,
+    file_path,
+    extension,
+    size
+  FROM repository_files
+  WHERE repository_id = $1
+  ORDER BY file_path
+  `,
+      [id]
+    );
+
+    return res.status(200).json(
+      {
+        success: true,
+        count: result.rowCount,
+        files: result.rows,
+      }
+      
+    );
+
+
+  } catch (error) {
+    console.error(error);
+
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch files",
+    });
+
+
+  }
+};
+

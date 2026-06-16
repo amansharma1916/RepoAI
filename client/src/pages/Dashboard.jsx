@@ -29,6 +29,8 @@ const Dashboard = () => {
   const [githubUrl, setGithubUrl] = useState("");
   const [showTree, setShowTree] = useState(false);
   const [tree, setTree] = useState(null);
+  const [showFiles, setShowFiles] = useState(false);
+  const [files, setFiles] = useState([]);
   const [showData, setShowData] = useState(false);
   const [repositoryOverview, setRepositoryOverview] = useState({
     // "repository": {
@@ -72,8 +74,14 @@ const Dashboard = () => {
         `/repository/tree/${res.data.repository.id}`
       );
       setTree(treeRes.data);
+      const filesRes = await apiClient.get(
+        `/repository/files/${res.data.repository.id}`
+      );
+      console.log(filesRes.data.files);
+      setFiles(filesRes.data.files);
       setShowTree(true);
       setShowData(true);
+      setShowFiles(true);
     } catch (error) {
       console.error(error);
       alert(error.response.data.message)
@@ -168,6 +176,23 @@ const Dashboard = () => {
         {tree && (
           <div className="mt-4 rounded-xl bg-white border border-slate-200 p-4 bg-slate-50 overflow-auto">
             <TreeNode node={tree} />
+          </div>
+        )}
+      </div> )}
+
+      {showFiles && (
+      <div className="mt-8 mx-auto max-w-4xl px-6 py-12 bg-white">
+        <h3 className="text-xl font-semibold text-slate-900">
+          Repository Files
+        </h3>
+
+        {files.length > 0 && (
+          <div className="mt-4 rounded-xl bg-white border border-slate-200 p-4 bg-slate-50 overflow-auto">
+            <ul>
+              {files.map((file) => (
+                <li key={file.id}>{file.file_path}</li>
+              ))}
+            </ul>
           </div>
         )}
       </div> )}
