@@ -1,10 +1,10 @@
 from pathlib import Path
 
-from parser_service import ParserService
-from language_registry import get_language
-from constants import IGNORE_DIRS
+from .parser_service import ParserService
+from .language_registry import get_language
+from .constants import IGNORE_DIRS
 
-from models import (
+from .models import (
     RepositoryParseResult,
     FailedParseResult,
 )

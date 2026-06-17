@@ -1,10 +1,12 @@
 from turtle import clone
 from fastapi import FastAPI
-from services.initializeRepo.service import router 
+from services.initializeRepo.service import router as repository_router
+from services.analysis.analysis_router import router as analysis_router
 app = FastAPI()
 
 
-app.include_router(router, prefix="/repository", tags=["repository"])
+app.include_router(repository_router, prefix="/repository", tags=["repository"])
+app.include_router(analysis_router, prefix="/repo-analysis", tags=["analysis"])
 
 @app.get("/")
 def home():

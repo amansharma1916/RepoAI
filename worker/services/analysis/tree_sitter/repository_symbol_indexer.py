@@ -1,5 +1,5 @@
-from repository_parser import RepositoryParser
-from symbol_extractor import SymbolExtractor
+from .repository_parser import RepositoryParser
+from .symbol_extractor import SymbolExtractor
 
 class RepositorySymbolIndexer:
 

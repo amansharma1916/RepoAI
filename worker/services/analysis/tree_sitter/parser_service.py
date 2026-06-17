@@ -2,9 +2,9 @@ from pathlib import Path
 
 from tree_sitter_language_pack import get_parser
 
-from language_registry import get_language
+from .language_registry import get_language
 
-from models import ParseResult
+from .models import ParseResult
 
 class ParserService:
     def parse_source(

@@ -1,4 +1,4 @@
-from models import Symbol
+from .models import Symbol
 
 
 class SymbolExtractor:

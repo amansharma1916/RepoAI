@@ -28,3 +28,18 @@ class Symbol:
     symbol_type: str
     file_path: str
     language: str
+
+@dataclass
+class Dependency:
+    source_file: str
+    target: str
+    dependency_type: str
+    is_internal: bool
+
+@dataclass
+class ResolvedDependency:
+    source_file: str
+    target: str
+    resolved_path: str | None
+    dependency_type: str
+    is_internal: bool
