@@ -1,61 +1,158 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from services.analysis.graph_service import GraphService
 from services.analysis.tree_sitter.analysis_service import AnalysisService
+from services.analysis.dependency_repository import DependencyRepository
+from services.analysis.symbol_repository import SymbolRepository
 
 router = APIRouter()
 
 analysis_service = AnalysisService()
+symbol_repository = SymbolRepository()
+dependency_repository = DependencyRepository()
+graph_service = GraphService()
 
-@router.get("/tree-sitter")
-def analyze_repository():
 
-    result = analysis_service.analyze_repository(
-        "repositories/28"
+@router.post(
+    "/analyze/{repository_id}"
+)
+def analyze_repository(
+    repository_id: int
+):
+
+    repo_path = (
+        f"repositories/{repository_id}"
+    )
+
+    
+
+    result = (
+        analysis_service
+        .analyze_repository(
+            repository_id,
+            repo_path
+            )
     )
 
     return {
-        "total_symbols": len(
+        "success": True,
+        "repository_id": repository_id,
+        "symbols": len(
             result["symbols"]
         ),
-        "total_dependencies": len(
+        "dependencies": len(
             result["dependencies"]
         ),
-        "total_files": len(
+        "graph_nodes": len(
             result["dependency_graph"]
+        ),
+        "reverse_graph_nodes": len(
+            result["reverse_dependency_graph"]
         )
     }
 
-@router.get("/symbols")
-def get_symbols():
+    # except Exception as e:
 
-    result = analysis_service.analyze_repository(
-        "repositories/28"
-    )
-
-    return [{
-        "count": len(result["symbols"]),
-        "symbols": [
-            {
-                "name": symbol.name,
-                "type": symbol.symbol_type,
-                "file": symbol.file_path
-            }
-            for symbol in result["symbols"]
-        ]
-    }]
+    #     raise HTTPException(
+    #         status_code=500,
+    #         detail=str(e)
+    #     )
     
-@router.get("/graph")
-def get_graph():
 
-    result = analysis_service.analyze_repository(
-        "repositories/28"
+    
+@router.get("/symbols/{repository_id}")
+def get_symbols(
+    repository_id: int
+):
+
+    symbols = symbol_repository.get_symbols(
+        repository_id
     )
 
-    return [
-        {
-            "count": len(result["dependency_graph"]),
-            "graph": result["dependency_graph"]
-        }
-    ]
+    return {
+        "count": len(symbols),
+        "symbols": symbols
+    }
+    
+
+@router.get("/dependencies/{repository_id}")
+def get_dependencies(
+    repository_id: int
+):
+
+    dependencies = (
+        dependency_repository
+        .get_dependencies(
+            repository_id
+        )
+    )
+
+    return {
+        "count": len(dependencies),
+        "dependencies": dependencies
+    }
+
+
+
+@router.get(
+    "/graph/{repository_id}"
+)
+def get_graph(
+    repository_id: int
+):
+
+    dependencies = (
+        dependency_repository
+        .get_dependencies(repository_id)
+    )
+
+    graph = {}
+
+    for dependency in dependencies:
+
+        source_file = dependency[2]
+        target =(
+            dependency[4]
+            if dependency[4]
+            else dependency[3]
+        )
+
+        if source_file not in graph:
+            graph[source_file] = []
+
+        graph[source_file].append(target)
+
+    return {
+        "count": len(graph),
+        "graph": graph
+    }
+
+
+@router.get(
+    "/reverse-graph/{repository_id}"
+)
+def get_reverse_graph(
+    repository_id: int
+):
+
+    dependencies = (
+        dependency_repository
+        .get_dependencies(repository_id)
+    )
+
+    graph = (
+        graph_service
+        .build_reverse_graph(
+            dependencies
+        )
+    )
+
+    return {
+        "count": len(graph),
+        "graph": graph
+    }
+
+
+
 
 
 @router.get("/health")

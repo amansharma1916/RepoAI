@@ -3,7 +3,8 @@ from .dependency_extractor import DependencyExtractor
 from .dependency_resolver import DependencyResolver
 from .dependency_graph import DependencyGraph
 from .reverse_dependency_graph import ReverseDependencyGraph
-
+from services.analysis.symbol_repository import SymbolRepository
+from services.analysis.dependency_repository import DependencyRepository
 
 class AnalysisService:
 
@@ -29,8 +30,16 @@ class AnalysisService:
             ReverseDependencyGraph()
         )
 
+        self.symbol_repository = (
+            SymbolRepository()
+        )
+        self.dependency_repository = (
+            DependencyRepository()
+        )
+
     def analyze_repository(
         self,
+        repository_id: int,
         repo_path: str
     ):
 
@@ -57,6 +66,19 @@ class AnalysisService:
         reverse_graph = (
             self.reverse_dependency_graph
             .build(resolved_dependencies)
+        )
+
+        print("Symbols:", len(symbols))
+        print("Dependencies:", len(resolved_dependencies))
+
+        self.symbol_repository.save_symbols(
+            repository_id,
+            symbols
+        )
+
+        self.dependency_repository.save_dependencies(
+            repository_id,
+            resolved_dependencies
         )
 
         return {
