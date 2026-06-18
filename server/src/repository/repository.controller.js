@@ -24,7 +24,7 @@ export const analyzeRepository = async (req, res) => {
 
     const repo = result.rows[0];
 
-    const workerResponse = await workerClient.post("/repository/analyze-repository", {
+    const workerResponse = await workerClient.post("/repository/clone", {
       githubUrl: repo.github_url,
       repositoryId: repo.id
     });

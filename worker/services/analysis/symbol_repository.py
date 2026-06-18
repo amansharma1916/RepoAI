@@ -86,3 +86,114 @@ class SymbolRepository:
         conn.close()
 
         return rows
+    
+
+
+    def get_symbol_summary(
+        self,
+        repository_id: int
+    ):
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT
+                symbol_type,
+                COUNT(*)
+            FROM repository_symbols
+            WHERE repository_id = %s
+            GROUP BY symbol_type
+            """,
+            (repository_id,)
+        )
+
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return rows
+
+
+
+    def get_symbols_by_type(
+        self,
+        repository_id: int,
+        symbol_type: str
+    ):
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT
+                name,
+                file_path,
+                language
+            FROM repository_symbols
+            WHERE repository_id = %s
+            AND symbol_type = %s
+            ORDER BY name
+            """,
+            (
+                repository_id,
+                symbol_type
+            )
+        )
+
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return rows
+
+
+    def search_symbols(
+        self,
+        repository_id: int,
+        query: str
+    ):
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT
+                name,
+                symbol_type,
+                file_path,
+                language
+            FROM repository_symbols
+            WHERE repository_id = %s
+            AND LOWER(name) LIKE LOWER(%s)
+            ORDER BY name
+            """,
+            (
+                repository_id,
+                f"%{query}%"
+            )
+        )
+
+        rows = cursor.fetchall()
+
+        cursor.close()
+        conn.close()
+
+        return rows
+
+
+
+
+
+
+
+
+

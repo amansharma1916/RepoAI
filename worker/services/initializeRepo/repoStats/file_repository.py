@@ -41,3 +41,64 @@ def save_repository_files(repository_id, files):
 
     cursor.close()
     conn.close()
+
+
+
+def get_repository_files(
+    repository_id: int
+):
+
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT
+            file_name,
+            file_path,
+            extension,
+            size
+        FROM repository_files
+        WHERE repository_id = %s
+        ORDER BY file_path
+        """,
+        (repository_id,)
+    )
+
+    rows = cursor.fetchall()
+
+    cursor.close()
+    conn.close()
+
+    return rows
+
+
+def get_file_path(
+    repository_id: int,
+    file_path: str
+):
+
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT file_path
+        FROM repository_files
+        WHERE repository_id = %s
+        AND file_path = %s
+        """,
+        (
+            repository_id,
+            file_path
+        )
+    )
+
+    row = cursor.fetchone()
+
+    cursor.close()
+    conn.close()
+
+    return row

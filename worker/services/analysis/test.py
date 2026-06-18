@@ -11,18 +11,18 @@
 # for dependency in dependencies[:5]:
 #     print(dependency)
 
-from services.analysis.tree_sitter.analysis_service import AnalysisService
-analysis_service = AnalysisService()
+# from services.analysis.tree_sitter.analysis_service import AnalysisService
+# analysis_service = AnalysisService()
 
-result = (
-            analysis_service
-            .analyze_repository(
-                27,
-                "repositories/27"
-            )
-        )
+# result = (
+#             analysis_service
+#             .analyze_repository(
+#                 27,
+#                 "repositories/27"
+#             )
+#         )
 
-print("done analyzing")
+# print("done analyzing")
 
 
 
@@ -42,3 +42,25 @@ print("done analyzing")
 #     result["reverse_graph"]
 #     )
 # }
+
+
+
+
+
+
+from services.analysis.symbol_repository import SymbolRepository
+
+
+repo = SymbolRepository()
+
+results = repo.search_symbols(
+    24,
+    "navbar"
+)
+
+print(len(results))
+
+for result in results:
+    print(result)
+
+

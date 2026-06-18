@@ -3,6 +3,10 @@ from services.analysis.graph_service import GraphService
 from services.analysis.tree_sitter.analysis_service import AnalysisService
 from services.analysis.dependency_repository import DependencyRepository
 from services.analysis.symbol_repository import SymbolRepository
+from services.initializeRepo.repoStats.file_repository import get_repository_files
+from services.initializeRepo.repoStats.file_repository import get_file_path
+from pathlib import Path
+
 
 router = APIRouter()
 
@@ -150,6 +154,300 @@ def get_reverse_graph(
         "count": len(graph),
         "graph": graph
     }
+
+
+@router.get(
+    "/overview/{repository_id}"
+)
+def get_overview(
+    repository_id: int
+):
+
+    symbol_summary = (
+        symbol_repository
+        .get_symbol_summary(
+            repository_id
+        )
+    )
+
+    dependency_count = (
+        dependency_repository
+        .get_dependency_count(
+            repository_id
+        )
+    )
+
+    summary = {}
+
+    total_symbols = 0
+
+    for symbol_type, count in symbol_summary:
+
+        summary[
+            f"{symbol_type}_count"
+        ] = count
+
+        total_symbols += count
+
+    return {
+        "repository_id": repository_id,
+        "symbol_count": total_symbols,
+        "dependency_count": dependency_count,
+        **summary
+    }
+
+
+@router.get(
+    "/components/{repository_id}"
+)
+def get_components(
+    repository_id: int
+):
+
+    components = (
+        symbol_repository
+        .get_symbols_by_type(
+            repository_id,
+            "component"
+        )
+    )
+
+    return {
+        "count": len(components),
+        "components": [
+            {
+                "name": component[0],
+                "file_path": component[1],
+                "language": component[2]
+            }
+            for component in components
+        ]
+    }
+
+
+@router.get(
+    "/classes/{repository_id}"
+)
+def get_classes(
+    repository_id: int
+):
+
+    classes = (
+        symbol_repository
+        .get_symbols_by_type(
+            repository_id,
+            "class"
+        )
+    )
+
+    return {
+        "count": len(classes),
+        "classes": [
+            {
+                "name": row[0],
+                "file_path": row[1],
+                "language": row[2]
+            }
+            for row in classes
+        ]
+    }
+
+
+@router.get(
+    "/functions/{repository_id}"
+)
+def get_functions(
+    repository_id: int
+):
+
+    functions = (
+        symbol_repository
+        .get_symbols_by_type(
+            repository_id,
+            "function"
+        )
+    )
+
+    return {
+        "count": len(functions),
+        "functions": [
+            {
+                "name": row[0],
+                "file_path": row[1],
+                "language": row[2]
+            }
+            for row in functions
+        ]
+    }
+
+
+@router.get(
+    "/methods/{repository_id}"
+)
+def get_methods(
+    repository_id: int
+):
+
+    methods = (
+        symbol_repository
+        .get_symbols_by_type(
+            repository_id,
+            "method"
+        )
+    )
+
+    return {
+        "count": len(methods),
+        "methods": [
+            {
+                "name": row[0],
+                "file_path": row[1],
+                "language": row[2]
+            }
+            for row in methods
+        ]
+    }
+
+
+@router.get(
+    "/imports/{repository_id}"
+)
+def get_imports(
+    repository_id: int
+):
+
+    imports = (
+        symbol_repository
+        .get_symbols_by_type(
+            repository_id,
+            "import"
+        )
+    )
+
+    return {
+        "count": len(imports),
+        "imports": [
+            {
+                "name": row[0],
+                "file_path": row[1],
+                "language": row[2]
+            }
+            for row in imports
+        ]
+    }
+
+
+@router.get(
+    "/search/{repository_id}"
+)
+def search_symbols(
+    repository_id: int,
+    q: str
+):
+
+    results = (
+        symbol_repository
+        .search_symbols(
+            repository_id,
+            q
+        )
+    )
+
+    return {
+        "query": q,
+        "count": len(results),
+        "results": [
+            {
+                "name": row[0],
+                "symbol_type": row[1],
+                "file_path": row[2],
+                "language": row[3]
+            }
+            for row in results
+        ]
+    }
+
+
+
+@router.get(
+    "/files/{repository_id}"
+)
+def get_files(
+    repository_id: int
+):
+
+    files = (
+        get_repository_files(
+            repository_id
+        )
+    )
+
+    return {
+        "count": len(files),
+        "files": [
+            {
+                "file_name": row[0],
+                "file_path": row[1],
+                "extension": row[2],
+                "size": row[3]
+            }
+            for row in files
+        ]
+    }
+
+
+
+@router.get(
+    "/file-content/{repository_id}"
+)
+def get_file_content(
+    repository_id: int,
+    path: str
+):
+
+    file_record = get_file_path(
+        repository_id,
+        path
+    )
+
+    if not file_record:
+
+        return {
+            "error": "File not found"
+        }
+
+    full_path = (
+        Path(
+            f"repositories/{repository_id}"
+        )
+        / path
+    )
+
+    if not full_path.exists():
+
+        return {
+            "error": "Physical file not found"
+        }
+
+    with open(
+        full_path,
+        "r",
+        encoding="utf-8",
+        errors="ignore"
+    ) as f:
+
+        content = f.read()
+
+    return {
+        "path": path,
+        "content": content
+    }
+
+
+
+
+
+
 
 
 

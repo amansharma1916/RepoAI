@@ -32,7 +32,7 @@ const Dashboard = () => {
   const [showFiles, setShowFiles] = useState(false);
   const [files, setFiles] = useState([]);
   const [showData, setShowData] = useState(false);
-  const [repositoryOverview, setRepositoryOverview] = useState({
+  const [repositoryData, setrepositoryData] = useState({
     // "repository": {
     //     "id": 21,
     //     "github_url": "https://github.com/web-codings123/EazyWed",
@@ -69,7 +69,7 @@ const Dashboard = () => {
       alert("Repository added successfully!");
       const overviewRes = await apiClient.get(`/repository/overview/${res.data.repository.id}`);
       console.log(overviewRes.data);
-      setRepositoryOverview(overviewRes.data);
+      setrepositoryData(overviewRes.data);
       const treeRes = await apiClient.get(
         `/repository/tree/${res.data.repository.id}`
       );
@@ -136,20 +136,20 @@ const Dashboard = () => {
 
             <div className="mt-8">
               <h3 className="text-xl font-semibold text-slate-900">Repository Details</h3>
-              <p><strong>ID:</strong> {repositoryOverview.repository.id}</p>
-              <p><strong>GitHub URL:</strong> {repositoryOverview.repository.github_url}</p>
-              <p><strong>Status:</strong> {repositoryOverview.repository.status}</p>
-              <p><strong>Created At:</strong> {new Date(repositoryOverview.repository.created_at).toLocaleString()}</p>
+              <p><strong>ID:</strong> {repositoryData.repository.id}</p>
+              <p><strong>GitHub URL:</strong> {repositoryData.repository.github_url}</p>
+              <p><strong>Status:</strong> {repositoryData.repository.status}</p>
+              <p><strong>Created At:</strong> {new Date(repositoryData.repository.created_at).toLocaleString()}</p>
             </div>
 
             <div className="mt-8">
               <h3 className="text-xl font-semibold text-slate-900">Statistics</h3>
-              <p><strong>Total Files:</strong> {repositoryOverview.stats.total_files}</p>
-              <p><strong>Total Folders:</strong> {repositoryOverview.stats.total_folders}</p>
-              <p><strong>Total Size:</strong> {(repositoryOverview.stats.total_size) / 1000000} MB</p>
+              <p><strong>Total Files:</strong> {repositoryData.stats.total_files}</p>
+              <p><strong>Total Folders:</strong> {repositoryData.stats.total_folders}</p>
+              <p><strong>Total Size:</strong> {(repositoryData.stats.total_size) / 1000000} MB</p>
               <p><strong>Languages:</strong></p>
               <ul>
-                {Object.entries(repositoryOverview.stats.languages).map(([language, count]) => (
+                {Object.entries(repositoryData.stats.languages).map(([language, count]) => (
                   <li key={language}>{language}: {count}</li>
                 ))}
               </ul>
@@ -158,7 +158,7 @@ const Dashboard = () => {
             <div className="mt-8">
               <h3 className="text-xl font-semibold text-slate-900">Technologies</h3>
               <ul>
-                {repositoryOverview.technologies.map((tech) => (
+                {repositoryData.technologies.map((tech) => (
                   <li key={tech}>{tech}</li>
                 ))}
               </ul>

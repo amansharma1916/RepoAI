@@ -86,3 +86,29 @@ class DependencyRepository:
         conn.close()
 
         return rows
+
+
+    def get_dependency_count(
+        self,
+        repository_id: int
+    ):
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT COUNT(*)
+            FROM repository_dependencies
+            WHERE repository_id = %s
+            """,
+            (repository_id,)
+        )
+
+        count = cursor.fetchone()[0]
+
+        cursor.close()
+        conn.close()
+
+        return count

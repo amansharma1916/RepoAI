@@ -14,7 +14,7 @@ class RepositoryRequest(BaseModel):
     repositoryId: int
     githubUrl: str
 
-@router.post("/analyze-repository")
+@router.post("/clone")
 def clone_repository_endpoint(data: RepositoryRequest):
 
     path = clone_repository(
