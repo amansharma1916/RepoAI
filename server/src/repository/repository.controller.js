@@ -13,6 +13,13 @@ export const analyzeRepository = async (req, res) => {
       });
     }
 
+    if (!/^https?:\/\/github\.com\/.+\/.+/.test(githubUrl)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid GitHub URL format",
+      });
+    }
+
     const result = await pool.query(
       `
       INSERT INTO repositories (github_url)

@@ -195,9 +195,15 @@ class ArchitectureService:
 
         for file in files:
 
+            file_path = file[1].lower()
             file_name = file[0].lower()
 
-            if "controller" in file_name:
+            if (
+                "/controllers/" in file_path
+                or "\\controllers\\" in file_path
+                or "/controller/" in file_path
+                or "\\controller\\" in file_path
+            ):
                 controllers.append(file[1])
 
         return sorted(list(set(controllers)))

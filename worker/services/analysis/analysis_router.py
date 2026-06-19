@@ -606,9 +606,6 @@ def get_architecture(
 
 
 
-
-
-
 @router.get("/health")
 def health():
 
