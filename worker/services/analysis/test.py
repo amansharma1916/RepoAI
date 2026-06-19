@@ -48,19 +48,43 @@
 
 
 
-from services.analysis.symbol_repository import SymbolRepository
+# from services.analysis.symbol_repository import SymbolRepository
 
 
-repo = SymbolRepository()
+# repo = SymbolRepository()
 
-results = repo.search_symbols(
-    24,
-    "navbar"
-)
+# results = repo.search_symbols(
+#     24,
+#     "navbar"
+# )
 
-print(len(results))
+# print(len(results))
 
-for result in results:
-    print(result)
+# for result in results:
+#     print(result)
 
+
+# from services.analysis.dependency_repository import DependencyRepository
+
+# repository = DependencyRepository()
+
+# result = repository.get_file_dependents(
+#     28,
+#     "/home/aman/Projects/RepoAI/worker/repositories/28/client/src/components/Navbar.jsx"
+# )
+
+
+# result = repository.get_dependencies(
+#     28
+# )
+
+
+from services.initializeRepo.repoStats.file_repository import (get_repository_files)
+
+
+result = get_repository_files(1)
+
+
+print("done analyzing")
+print(result)
 

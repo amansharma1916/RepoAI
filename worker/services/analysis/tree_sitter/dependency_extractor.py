@@ -1,3 +1,5 @@
+from services.utils.path_utils import to_repo_path
+
 from .models import Dependency
 
 
@@ -16,6 +18,7 @@ class DependencyExtractor:
 
             dependencies.append(
                 Dependency(
+                    # source_file=to_repo_path(symbol.file_path),
                     source_file=symbol.file_path,
                     target=normalized_target,
                     dependency_type="import",

@@ -1,5 +1,7 @@
 from pathlib import Path
 
+from services.utils.path_utils import to_repo_path
+
 from .models import ResolvedDependency
 
 
@@ -36,9 +38,16 @@ class DependencyResolver:
                 dependency.target
             )
 
+        
+        # print("SOURCE:", to_repo_path(dependency.source_file))    
+        print("SOURCE:", dependency.source_file)
+        print("RESOLVED:", resolved_path)
+
         return ResolvedDependency(
+            # source_file=to_repo_path(dependency.source_file),
             source_file=dependency.source_file,
             target=dependency.target,
+            # resolved_path=to_repo_path(resolved_path) if resolved_path else None,
             resolved_path=resolved_path,
             dependency_type=dependency.dependency_type,
             is_internal=dependency.is_internal

@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException
+from services.analysis.architecture_service import ArchitectureService
 from services.analysis.graph_service import GraphService
+from services.analysis.trace_service import TraceService
 from services.analysis.tree_sitter.analysis_service import AnalysisService
 from services.analysis.dependency_repository import DependencyRepository
 from services.analysis.symbol_repository import SymbolRepository
@@ -14,7 +16,7 @@ analysis_service = AnalysisService()
 symbol_repository = SymbolRepository()
 dependency_repository = DependencyRepository()
 graph_service = GraphService()
-
+architecture_service = ArchitectureService()
 
 @router.post(
     "/analyze/{repository_id}"
@@ -337,35 +339,6 @@ def get_imports(
     }
 
 
-@router.get(
-    "/search/{repository_id}"
-)
-def search_symbols(
-    repository_id: int,
-    q: str
-):
-
-    results = (
-        symbol_repository
-        .search_symbols(
-            repository_id,
-            q
-        )
-    )
-
-    return {
-        "query": q,
-        "count": len(results),
-        "results": [
-            {
-                "name": row[0],
-                "symbol_type": row[1],
-                "file_path": row[2],
-                "language": row[3]
-            }
-            for row in results
-        ]
-    }
 
 
 
@@ -444,8 +417,191 @@ def get_file_content(
     }
 
 
+@router.get(
+    "/file-dependents/{repository_id}"
+)
+def get_file_dependents(
+    repository_id: int,
+    path: str
+):
+    result = dependency_repository.get_file_dependents(
+        repository_id,
+        path
+    )
+
+    return {
+        "file": path,
+        "used_by": [row[0] for row in result]
+    }
 
 
+
+@router.get(
+    "/file-dependencies/{repository_id}"
+)
+def get_file_dependencies(
+    repository_id: int,
+    path: str
+):
+    result = dependency_repository.get_file_dependencies(
+        repository_id,
+        path
+    )
+
+    return {
+        "file": path,
+        "dependencies": [
+            row[0]
+            for row in result
+        ]
+    }
+
+
+@router.get(
+    "/symbol-name/{repository_id}"
+)
+def get_symbol_details(
+    repository_id: int,
+    symbol_name: str
+):
+
+    symbol = symbol_repository.get_symbol_by_name(
+        repository_id,
+        symbol_name
+    )
+
+    if not symbol:
+        raise HTTPException(
+            status_code=404,
+            detail="Symbol not found"
+        )
+
+    return {
+        "id": symbol[0],
+        "repository_id": symbol[1],
+        "name": symbol[2],
+        "symbol_type": symbol[3],
+        "file_path": symbol[4],
+        "language": symbol[5],
+        "parent_symbol": symbol[6],
+        "created_at": symbol[7]
+    }
+
+
+@router.get(
+    "/search-symbols/{repository_id}"
+)
+def search_symbols(
+    repository_id: int,
+    q: str
+):
+
+    results = (
+        symbol_repository
+        .search_symbols(
+            repository_id,
+            q
+        )
+    )
+
+    return {
+        "query": q,
+        "count": len(results),
+        "results": [
+            {
+                "name": row[0],
+                "symbol_type": row[1],
+                "file_path": row[2],
+                "language": row[3]
+            }
+            for row in results
+        ]
+    }
+
+
+
+@router.get(
+    "/symbol-usages/{repository_id}/{symbol_name}"
+)
+def get_symbol_usages(
+    repository_id: int,
+    symbol_name: str
+):
+
+    symbol = symbol_repository.get_symbol_by_name(
+        repository_id,
+        symbol_name
+    )
+
+    if not symbol:
+        raise HTTPException(
+            status_code=404,
+            detail="Symbol not found"
+        )
+
+    file_path = symbol[4]
+
+    usages = dependency_repository.get_file_dependents(
+        repository_id,
+        file_path
+    )
+
+    return {
+        "symbol": symbol[2],
+        "symbol_type": symbol[3],
+        "defined_in": file_path,
+        "usage_count": len(usages),
+        "used_in": [
+            usage[0]
+            for usage in usages
+        ]
+    }
+
+
+
+trace_service = TraceService()
+
+@router.get(
+    "/trace/{repository_id}"
+)
+def trace_file(
+    repository_id: int,
+    path: str
+):
+
+    return trace_service.trace_file(
+        repository_id,
+        path
+    )
+
+
+@router.get(
+    "/trace-tree/{repository_id}"
+)
+def trace_tree(
+    repository_id: int,
+    path: str,
+    depth: int = 3
+):
+
+    return trace_service.trace_tree(
+        repository_id,
+        path,
+        depth
+    )
+
+
+
+@router.get(
+    "/architecture/{repository_id}"
+)
+def get_architecture(
+    repository_id: int
+):
+
+    return architecture_service.get_architecture(
+        repository_id
+    )
 
 
 

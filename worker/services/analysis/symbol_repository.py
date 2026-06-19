@@ -1,6 +1,8 @@
 from database.postgres import get_connection
 from dotenv import load_dotenv
 
+from services.utils.path_utils import to_repo_path
+
 load_dotenv()
 
 class SymbolRepository:
@@ -25,6 +27,10 @@ class SymbolRepository:
 
         for symbol in symbols:
 
+            file_path = to_repo_path(
+                symbol.file_path
+            )
+
             cursor.execute(
                 """
                 INSERT INTO repository_symbols (
@@ -41,7 +47,7 @@ class SymbolRepository:
                     repository_id,
                     symbol.name,
                     symbol.symbol_type,
-                    symbol.file_path,
+                    file_path,
                     symbol.language,
                     getattr(symbol, "parent_symbol", None)
                 )
@@ -153,6 +159,44 @@ class SymbolRepository:
 
         return rows
 
+    def get_symbol_by_name(
+        self,
+        repository_id: int,
+        symbol_name: str
+    ):
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT
+                id,
+                repository_id,
+                name,
+                symbol_type,
+                file_path,
+                language,
+                parent_symbol,
+                created_at
+            FROM repository_symbols
+            WHERE repository_id = %s
+            AND LOWER(name) = LOWER(%s)
+            LIMIT 1
+            """,
+            (
+                repository_id,
+                symbol_name
+            )
+        )
+
+        row = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        return row
 
     def search_symbols(
         self,
@@ -174,6 +218,7 @@ class SymbolRepository:
             FROM repository_symbols
             WHERE repository_id = %s
             AND LOWER(name) LIKE LOWER(%s)
+            AND symbol_type != 'import'
             ORDER BY name
             """,
             (
@@ -189,7 +234,36 @@ class SymbolRepository:
 
         return rows
 
+    def get_symbol_usages(
+        self,
+        repository_id: int,
+        symbol_name: str
+    ):
 
+        conn = get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute(
+            """
+            SELECT
+                file_path
+            FROM repository_symbols
+            WHERE repository_id = %s
+            AND LOWER(name) = LOWER(%s)
+            LIMIT 1
+            """,
+            (
+                repository_id,
+                symbol_name
+            )
+        )
+
+        row = cursor.fetchone()
+
+        cursor.close()
+        conn.close()
+
+        return row
 
 
 
