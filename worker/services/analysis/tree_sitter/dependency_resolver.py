@@ -40,8 +40,8 @@ class DependencyResolver:
 
         
         # print("SOURCE:", to_repo_path(dependency.source_file))    
-        print("SOURCE:", dependency.source_file)
-        print("RESOLVED:", resolved_path)
+        # print("SOURCE:", dependency.source_file)
+        # print("RESOLVED:", resolved_path)
 
         return ResolvedDependency(
             # source_file=to_repo_path(dependency.source_file),

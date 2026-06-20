@@ -53,7 +53,8 @@ def analyze_repository(
         ),
         "reverse_graph_nodes": len(
             result["reverse_dependency_graph"]
-        )
+        ),
+        "chunks": result["chunks"]
     }
 
     # except Exception as e:

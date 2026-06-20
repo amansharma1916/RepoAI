@@ -28,6 +28,9 @@ class Symbol:
     symbol_type: str
     file_path: str
     language: str
+    start_line: int
+    end_line: int
+
 
 @dataclass
 class Dependency:

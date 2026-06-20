@@ -156,7 +156,9 @@ class SymbolExtractor:
                  name=name,
                  symbol_type="class",
                   file_path=parse_result.file_path,
-                  language=parse_result.language
+                  language=parse_result.language,
+                  start_line=node.start_position().row + 1,
+                  end_line=node.end_position().row + 1
                 )
         )
 
@@ -186,7 +188,9 @@ class SymbolExtractor:
                 name=name,
                 symbol_type=symbol_type,
                 file_path=parse_result.file_path,
-                language=parse_result.language
+                language=parse_result.language,
+                start_line=node.start_position().row + 1,
+                end_line=node.end_position().row + 1
             )
         )
 
@@ -208,7 +212,9 @@ class SymbolExtractor:
                 name=statement,
                 symbol_type="import",
                 file_path=parse_result.file_path,
-                language=parse_result.language
+                language=parse_result.language,
+                start_line=node.start_position().row + 1,
+                end_line=node.end_position().row + 1
             )
         )
 
@@ -230,7 +236,9 @@ class SymbolExtractor:
                 name=statement,
                 symbol_type="import",
                 file_path=parse_result.file_path,
-                language=parse_result.language
+                language=parse_result.language,
+                start_line=node.start_position().row + 1,
+                end_line=node.end_position().row + 1
             )
         )
 
@@ -254,7 +262,9 @@ class SymbolExtractor:
                 name=name,
                 symbol_type="function",
                 file_path=parse_result.file_path,
-                language=parse_result.language
+                language=parse_result.language,
+                start_line=node.start_position().row + 1,
+                end_line=node.end_position().row + 1
             )
         )
 
@@ -278,7 +288,9 @@ class SymbolExtractor:
                 name=name,
                 symbol_type="class",
                 file_path=parse_result.file_path,
-                language=parse_result.language
+                language=parse_result.language,
+                start_line=node.start_position().row + 1,
+                end_line=node.end_position().row + 1
             )
         )
 
@@ -302,7 +314,9 @@ class SymbolExtractor:
                 name=name,
                 symbol_type="method",
                 file_path=parse_result.file_path,
-                language=parse_result.language
+                language=parse_result.language,
+                start_line=node.start_position().row + 1,
+                end_line=node.end_position().row + 1
             )
         )
 
@@ -320,6 +334,14 @@ class SymbolExtractor:
         identifier_node = node.child(0)
 
         value_node = node.child(2)
+        # print("DIRRRRR")
+        # print(node.start_position().row)
+        # print(type(node.start_position()))
+
+        # print(node.end_position().row)
+        # print(type(node.end_position()))
+        # print(type(node))
+        # print(dir(node))
 
         if value_node.kind() != "arrow_function":
             return
@@ -340,6 +362,8 @@ class SymbolExtractor:
                 name=name,
                 symbol_type="component",
                 file_path=parse_result.file_path,
-                language=parse_result.language
+                language=parse_result.language,
+                start_line=node.start_position().row + 1,
+                end_line=node.end_position().row + 1
             )
         )

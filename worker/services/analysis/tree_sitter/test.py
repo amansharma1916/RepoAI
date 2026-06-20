@@ -1,5 +1,7 @@
-from repository_parser import RepositoryParser
-from parser_service import ParserService
+
+from services.analysis.tree_sitter.parser_service import ParserService
+from services.analysis.tree_sitter.repository_parser import RepositoryParser
+
 
 parser = RepositoryParser()
 file_parser = ParserService()
@@ -102,9 +104,11 @@ file_parser = ParserService()
 
 
 
-result = file_parser.parse_file("services/tree-sitter/sample.jsx")
+result = file_parser.parse_file("services/analysis/tree_sitter/sample.jsx")
 
 def print_ast(node, depth=0):
+
+    print(dir(node))
 
     print(
         "  " * depth +

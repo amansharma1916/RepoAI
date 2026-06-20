@@ -39,9 +39,11 @@ class SymbolRepository:
                     symbol_type,
                     file_path,
                     language,
-                    parent_symbol
+                    parent_symbol,
+                    start_line,
+                    end_line
                 )
-                VALUES (%s, %s, %s, %s, %s, %s)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
                 """,
                 (
                     repository_id,
@@ -49,7 +51,9 @@ class SymbolRepository:
                     symbol.symbol_type,
                     file_path,
                     symbol.language,
-                    getattr(symbol, "parent_symbol", None)
+                    getattr(symbol, "parent_symbol", None),
+                    symbol.start_line,
+                    symbol.end_line
                 )
             )
 
@@ -78,6 +82,8 @@ class SymbolRepository:
                 file_path,
                 language,
                 parent_symbol,
+                start_line,
+                end_line,
                 created_at
             FROM repository_symbols
             WHERE repository_id = %s
