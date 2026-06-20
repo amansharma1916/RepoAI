@@ -7,6 +7,7 @@ from services.analysis.symbol_repository import SymbolRepository
 from services.analysis.dependency_repository import DependencyRepository
 from services.analysis.chunk_repository import ChunkRepository
 from services.analysis.chunk.chunk_extractor import RepositoryChunkGenerator
+from services.embedding.embedding_generator import EmbeddingGenerator
 
 class AnalysisService:
 
@@ -44,6 +45,11 @@ class AnalysisService:
         self.chunk_generator = (
             RepositoryChunkGenerator()
         )
+        self.embedding_generator = (
+            EmbeddingGenerator()
+        )
+
+        
 
 
     def analyze_repository(
@@ -101,16 +107,17 @@ class AnalysisService:
             )
         )
 
-        print("Chunks:", len(chunks))
-        print(chunks[0])
-        print(chunks[0]["content"][:300])
-
-        # print("\nChunks:", len(chunks))
-
         self.chunk_repository.save_chunks(
             repository_id,
             chunks
         )
+
+        embeddings = (self.embedding_generator.generate_repository_embeddings(
+                        repository_id
+                    )
+        )
+
+
 
         return {
             "symbols": symbols,
@@ -121,5 +128,6 @@ class AnalysisService:
             "chunks": {
                 "count": len(chunks),
                 "chunk_sample": chunks[0] if chunks else None
-            }
+            },
+            "total_embeddings": embeddings
         }

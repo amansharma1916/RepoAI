@@ -99,6 +99,29 @@ class SymbolExtractor:
                 parse_result,
                 symbols
             )
+            self._extract_js_function(
+                node,
+                source,
+                parse_result,
+                symbols
+            )
+            self._extract_mongoose_model(
+                node,
+                source,
+                parse_result,
+                symbols
+            )
+
+        if node.kind() == "call_expression":
+            self._extract_express_route(
+                node,
+                source,
+                parse_result,
+                symbols
+            )
+
+
+
 
         for i in range(node.child_count()):
 
@@ -111,6 +134,131 @@ class SymbolExtractor:
                     parse_result,
                     symbols
                 )
+
+
+
+    def _extract_express_route(
+        self,
+        node,
+        source,
+        parse_result,
+        symbols
+    ):
+
+        if node.child_count() == 0:
+            return
+
+        function_node = node.child(0)
+
+        if function_node.kind() != "member_expression":
+            return
+
+        expression_text = source[
+            function_node.start_byte():
+            function_node.end_byte()
+        ]
+
+        if expression_text not in [
+            "router.get",
+            "router.post",
+            "router.put",
+            "router.patch",
+            "router.delete",
+            "app.get",
+            "app.post",
+            "app.put",
+            "app.patch",
+            "app.delete"
+        ]:
+            return
+        
+        method = expression_text.split(".")[1].upper()
+        
+        arguments_node = node.child_by_field_name(
+            "arguments"
+        )
+
+        if not arguments_node:
+            return
+
+        if arguments_node.child_count() < 2:
+            return
+        
+
+        route_node = arguments_node.child(1)
+
+        route_path = source[
+            route_node.start_byte():
+            route_node.end_byte()
+        ]
+
+        route_path = route_path.strip("'\"")
+
+
+        symbols.append(
+            Symbol(
+                name=f"{method} {route_path}",
+                symbol_type="route",
+                file_path=parse_result.file_path,
+                language=parse_result.language,
+                start_line=node.start_position().row + 1,
+                end_line=node.end_position().row + 1
+            )
+        )
+
+        # print(
+        #     source[
+        #         arguments_node.start_byte():
+        #         arguments_node.end_byte()
+        #     ]
+        # )
+
+
+    def _extract_mongoose_model(
+        self,
+        node,
+        source,
+        parse_result,
+        symbols
+    ):
+
+        if node.child_count() < 3:
+            return
+
+        identifier_node = node.child(0)
+        value_node = node.child(2)
+
+        if value_node.kind() != "call_expression":
+            return
+
+        expression = source[
+            value_node.start_byte():
+            value_node.end_byte()
+        ]
+
+        if "mongoose.model" not in expression:
+            return
+
+        name = source[
+            identifier_node.start_byte():
+            identifier_node.end_byte()
+        ]
+
+        symbols.append(
+            Symbol(
+                name=name,
+                symbol_type="model",
+                file_path=parse_result.file_path,
+                language=parse_result.language,
+                start_line=node.start_position().row + 1,
+                end_line=node.end_position().row + 1
+            )
+        )
+        
+
+
+
+
 
 
     def _is_method(self, node):
@@ -367,3 +515,52 @@ class SymbolExtractor:
                 end_line=node.end_position().row + 1
             )
         )
+
+    def _extract_js_function(
+        self,
+        node,
+        source,
+        parse_result,
+        symbols
+    ):
+
+        if node.child_count() < 3:
+            return
+
+        identifier_node = node.child(0)
+        value_node = node.child(2)
+
+        if value_node.kind() not in [
+            "arrow_function",
+            "async_arrow_function",
+            "function_expression",
+            
+            
+        ]:
+            return
+
+        name = source[
+            identifier_node.start_byte():
+            identifier_node.end_byte()
+        ]
+
+        if not name:
+            return
+
+        if name[0].isupper():
+            return
+
+        symbols.append(
+            Symbol(
+                name=name,
+                symbol_type="function",
+                file_path=parse_result.file_path,
+                language=parse_result.language,
+                start_line=node.start_position().row + 1,
+                end_line=node.end_position().row + 1
+            )
+        )
+
+
+
+
