@@ -1,8 +1,21 @@
 import React from 'react'
-
+import { useNavigate } from 'react-router-dom';
 const Dashboard = () => {
+
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    localStorage.clear();
+    navigate("/");
+  }
+
+
   return (
-    <div>Dashboard</div>
+    <div>
+      <h1>Dashboard</h1>
+      <button onClick={handleLogout}>Logout</button>
+    </div>
   )
 }
 

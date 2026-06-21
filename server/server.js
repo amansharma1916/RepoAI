@@ -3,16 +3,21 @@ import dotenv from "dotenv";
 import pool from "./src/database/db.js";
 import cors from "cors";
 import repositoryRoutes from "./src/repository/repository.routes.js";
+import authRoutes from "./src/auth/auth.routes.js";
 dotenv.config();
 
 const app = express();
 
 app.use(express.json());
-app.use(cors({
-  origin: process.env.Client,
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 
 app.get("/", (req, res) => {
   res.json({
@@ -42,6 +47,9 @@ app.get("/health", async (req, res) => {
 
 
 app.use("/api/repository", repositoryRoutes);
+app.use("/api/auth", authRoutes);
+
+
 
 app.listen(5000, () => {
   console.log("Server is running on port 5000");

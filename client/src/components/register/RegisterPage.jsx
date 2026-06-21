@@ -1,9 +1,94 @@
 import React from "react";
 import { FcGoogle } from "react-icons/fc";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import HeroBackground from "../HeroBackground";
+import { GoogleLogin } from "@react-oauth/google";
+import { googleAuth, registerUser } from "../../services/auth.service";
+import { useState } from "react";
 
 const RegisterPage = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    agreeToTerms: false,
+  });
+  const [loading, setLoading] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+      try {
+        const data = await googleAuth(
+          credentialResponse.credential
+        );
+  
+        console.log("Login Success:", data);
+  
+        if (data.success) {
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("user", JSON.stringify(data.user));
+          navigate("/dashboard");
+        }
+        
+      } catch (error) {
+        console.error("Backend Authentication Failed:", error);
+      }
+    };
+  
+  
+     const handleGoogleError = () => {
+      console.error("Google Login Failed");
+    };
+
+
+    const handleRegister = async (e) => {
+      e.preventDefault();
+
+      if (!formData.agreeToTerms) {
+        alert("You must agree to the Terms of Service and Privacy Policy.");
+        return;
+      }
+
+      if (formData.password !== formData.confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      if (!formData.fullName || !formData.email || !formData.password) {
+        alert("Please fill in all required fields.");
+        return;
+      }
+
+      const payload = {
+        name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+      };
+
+      setLoading(true);
+      try{
+        const response = await registerUser(payload);
+        console.log("Registration Success:", response);
+        navigate("/login");
+      }catch(error){
+        console.error("Registration Failed:", error);
+      } finally {
+        setLoading(false);
+      }
+
+    }
+
+
+
   return (
     <section className="relative min-h-screen bg-dark-900 overflow-hidden">
         <HeroBackground />
@@ -110,25 +195,17 @@ const RegisterPage = () => {
               </div>
 
               {/* Google Signup */}
-              <button
-                className="
-                  w-full
-                  h-12
-                  rounded-xl
-                  bg-white
-                  text-gray-900
-                  font-semibold
-                  flex
-                  items-center
-                  justify-center
-                  gap-3
-                  hover:bg-gray-100
-                  transition-all
-                "
-              >
-                <FcGoogle className="text-2xl" />
-                Continue with Google
-              </button>
+              <div className="w-full overflow-hidden flex justify-center">
+                <GoogleLogin
+                  width="350"
+                  size="large"
+                  shape="rectangular"
+                  text="continue_with"
+                  theme="filled_white"
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                />
+              </div>
 
               {/* Divider */}
               <div className="relative my-8">
@@ -155,6 +232,9 @@ const RegisterPage = () => {
                 <input
                   type="text"
                   placeholder="Full Name"
+                  name="fullName"
+                  value={formData.fullName}
+                  onChange={handleInputChange}
                   className="
                     w-full
                     h-12
@@ -173,6 +253,9 @@ const RegisterPage = () => {
                 <input
                   type="email"
                   placeholder="Email Address"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   className="
                     w-full
                     h-12
@@ -191,6 +274,9 @@ const RegisterPage = () => {
                 <input
                   type="password"
                   placeholder="Password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
                   className="
                     w-full
                     h-12
@@ -209,6 +295,9 @@ const RegisterPage = () => {
                 <input
                   type="password"
                   placeholder="Confirm Password"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
                   className="
                     w-full
                     h-12
@@ -229,6 +318,13 @@ const RegisterPage = () => {
               <label className="flex items-start gap-3 mt-5 cursor-pointer">
                 <input
                   type="checkbox"
+                  name="agreeToTerms"
+                  checked={formData.agreeToTerms}
+                  onChange={(e) =>
+                    setFormData((prevData) => ({
+                      ...prevData,
+                      agreeToTerms: e.target.checked,
+                    }))}
                   className="mt-1 accent-accent"
                 />
 
@@ -252,6 +348,8 @@ const RegisterPage = () => {
 
               {/* Signup Button */}
               <button
+                onClick={handleRegister}
+                disabled={loading}
                 className="
                   w-full
                   h-12

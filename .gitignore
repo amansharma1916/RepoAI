@@ -4,3 +4,4 @@ RepoAI_Phase1_to_Phase2_Architecture.pdf
 client/bolt_ui.zip
 client/.bolt
 client/public/logo.png
+client/.env

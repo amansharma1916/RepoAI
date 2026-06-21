@@ -1,12 +1,78 @@
 import React from "react";
 import { FcGoogle } from "react-icons/fc";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import HeroBackground from "../HeroBackground";
+import { GoogleLogin } from "@react-oauth/google";
+import { googleAuth, loginUser } from "../../services/auth.service";
+import { useState } from "react";
 
 const LoginPage = () => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [loading, setLoading] = useState(false);
+  
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const data = await googleAuth(
+        credentialResponse.credential
+      );
+
+      console.log("Login Success:", data);
+
+      if (data.success) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/dashboard");
+      }
+      
+    } catch (error) {
+      console.error("Backend Authentication Failed:", error);
+    }
+  };
+
+
+   const handleGoogleError = () => {
+    console.error("Google Login Failed");
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const data = await loginUser(formData);
+      console.log("Login Success:", data);
+
+      if (data.success) {
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("user", JSON.stringify(data.user));
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.error("Login Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+
   return (
     <section className="relative min-h-screen bg-dark-900 overflow-hidden">
-        <HeroBackground />
+      <HeroBackground />
       {/* Background Glow Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-20 left-20 w-96 h-96 bg-accent/10 rounded-full blur-[120px]" />
@@ -124,26 +190,17 @@ const LoginPage = () => {
               </div>
 
               {/* Google Login */}
-              <button
-                className="
-                  w-full
-                  h-12
-                  rounded-xl
-                  bg-white
-                  text-gray-900
-                  font-semibold
-                  flex
-                  items-center
-                  justify-center
-                  gap-3
-                  hover:bg-gray-100
-                  transition-all
-                  duration-200
-                "
-              >
-                <FcGoogle className="text-2xl" />
-                Continue with Google
-              </button>
+              <div className="w-full overflow-hidden flex justify-center">
+                <GoogleLogin
+                  width="350"
+                  size="large"
+                  shape="rectangular"
+                  text="continue_with"
+                  theme="filled_white"
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                />
+              </div>
 
               {/* Divider */}
               <div className="relative my-8">
@@ -169,6 +226,9 @@ const LoginPage = () => {
               <div className="space-y-4">
                 <input
                   type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
                   placeholder="Email Address"
                   className="
                     w-full
@@ -188,6 +248,9 @@ const LoginPage = () => {
 
                 <input
                   type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
                   placeholder="Password"
                   className="
                     w-full
@@ -208,6 +271,9 @@ const LoginPage = () => {
 
               {/* Sign In */}
               <button
+
+                onClick={handleLogin}
+                disabled={loading}
                 className="
                   w-full
                   h-12
