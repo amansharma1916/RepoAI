@@ -489,36 +489,6 @@ def get_symbol_details(
     }
 
 
-@router.get(
-    "/search-symbols/{repository_id}"
-)
-def search_symbols(
-    repository_id: int,
-    q: str
-):
-
-    results = (
-        symbol_repository
-        .search_symbols(
-            repository_id,
-            q
-        )
-    )
-
-    return {
-        "query": q,
-        "count": len(results),
-        "results": [
-            {
-                "name": row[0],
-                "symbol_type": row[1],
-                "file_path": row[2],
-                "language": row[3]
-            }
-            for row in results
-        ]
-    }
-
 
 
 @router.get(
