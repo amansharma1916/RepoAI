@@ -116,13 +116,12 @@ const RegisterPage = () => {
         <div className="hidden lg:flex w-[70%] relative items-center px-16 overflow-hidden">
           {/* Watermark */}
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <h1 className="text-[14rem] font-black text-white/[0.2] tracking-wider select-none">
+            <h1 className="text-[14rem] font-black text-white/[1] tracking-wider select-none">
               REPOAI
             </h1>
           </div>
 
-          <div className="relative max-w-3xl">
-            {/* Badge */}
+          {/* <div className="relative max-w-3xl">
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-dark-700/80 border border-accent/20 mb-8">
               <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
               <span className="text-sm text-gray-300">
@@ -130,21 +129,18 @@ const RegisterPage = () => {
               </span>
             </div>
 
-            {/* Heading */}
             <h1 className="text-6xl xl:text-7xl font-extrabold leading-tight mb-6">
               <span className="text-white">Start Building With</span>
               <br />
               <span className="gradient-text">RepoAI</span>
             </h1>
 
-            {/* Description */}
             <p className="text-xl text-gray-400 leading-relaxed max-w-2xl mb-12">
               Transform any GitHub repository into an AI-powered knowledge
               base. Understand architecture, discover code relationships,
               and onboard faster than ever.
             </p>
 
-            {/* Benefits */}
             <div className="space-y-5">
               <BenefitItem text="Analyze repositories in minutes" />
               <BenefitItem text="Chat with your codebase using AI" />
@@ -153,7 +149,6 @@ const RegisterPage = () => {
               <BenefitItem text="Trace dependencies and execution flow" />
             </div>
 
-            {/* Stats */}
             <div className="flex gap-12 mt-12">
               <div>
                 <h3 className="text-3xl font-bold text-white">100+</h3>
@@ -170,7 +165,7 @@ const RegisterPage = () => {
                 <p className="text-gray-500 mt-1">Developer Satisfaction</p>
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Divider */}

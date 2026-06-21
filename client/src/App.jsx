@@ -13,7 +13,7 @@ import Login from './components/login/LoginPage';
 import Register from './components/register/RegisterPage';
 import ProtectedRoute from './protection/ProtectedRoute';
 import PublicLayout from './protection/PublicLayout';
-import Dashboard from './components/dashboard/Dashboard';
+import DashboardPage from './pages/DashboardPage';
 import { Routes, Route } from 'react-router-dom';
 
 function HomePage() {
@@ -43,7 +43,7 @@ function App() {
 
 
         <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
         </Route>
 
 

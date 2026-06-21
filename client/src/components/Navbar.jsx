@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -13,17 +14,17 @@ const Navbar = () => {
   }, []);
 
   const navLinks = [
-    { label: 'Features', href: '#features' },
-    { label: 'How It Works', href: '#how-it-works' },
-    { label: 'Demo', href: '#demo' },
-    // { label: 'Pricing', href: '#cta' },
+    { label: 'Features', href: '/#features' },
+    { label: 'How It Works', href: '/#how-it-works' },
+    { label: 'Demo', href: '/#demo' },
+    // { label: 'Pricing', href: '/#cta' },
   ];
 
   return (
     <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled
-          ? 'bg-dark-900/80 backdrop-blur-xl border-b border-white/5'
-          : 'bg-transparent'
+        ? 'bg-dark-900/80 backdrop-blur-xl border-b border-white/5'
+        : 'bg-transparent'
         }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -62,12 +63,9 @@ const Navbar = () => {
             >
               GitHub
             </a>
-            <a
-              href="/login"
-              className="px-5 py-2.5 text-sm font-semibold rounded-lg bg-accent text-dark-900 hover:bg-accent-light transition-colors duration-200"
-            >
+            <Link to="/login" onClick={() => setMobileOpen(false)} className="px-5 py-2.5 text-sm font-semibold rounded-lg bg-accent text-dark-900 hover:bg-accent-light transition-colors duration-200 text-center">
               Get Started
-            </a>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -112,13 +110,10 @@ const Navbar = () => {
               >
                 GitHub
               </a>
-              <a
-                href="/login"
-                onClick={() => setMobileOpen(false)}
-                className="px-5 py-2.5 text-sm font-semibold rounded-lg bg-accent text-dark-900 hover:bg-accent-light transition-colors duration-200 text-center"
-              >
+              <Link to="/login" onClick={() => setMobileOpen(false)} className="px-5 py-2.5 text-sm font-semibold rounded-lg bg-accent text-dark-900 hover:bg-accent-light transition-colors duration-200 text-center">
                 Get Started
-              </a>
+              </Link>
+
             </div>
           </div>
         </div>
