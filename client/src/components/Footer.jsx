@@ -60,7 +60,7 @@ const Footer = () => {
           {/* Brand Column */}
           <div className="lg:col-span-2">
             <a href="#" className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
+              {/* <div className="w-8 h-8 rounded-lg bg-accent flex items-center justify-center">
                 <svg
                   className="w-5 h-5 text-dark-900"
                   fill="none"
@@ -74,7 +74,7 @@ const Footer = () => {
                     d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                   />
                 </svg>
-              </div>
+              </div> */}
               <span className="text-xl font-bold tracking-tight">
                 Repo<span className="text-accent">AI</span>
               </span>
