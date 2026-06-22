@@ -7,12 +7,13 @@ import EmptyState from '../components/dashboard/EmptyState';
 import LoadingState from '../components/dashboard/LoadingState';
 import ChatContainer from '../components/dashboard/ChatContainer';
 import RepositoryList from '../components/dashboard/RepositoryList';
-import ComingSoon from '../components/dashboard/ComingSoon';
+import PlansPanel from '../components/dashboard/PlansPanel';
 import {
   DASHBOARD_STATUS,
   DASHBOARD_TABS,
   useRepository,
 } from '../hooks/useRepository';
+import { useBilling } from '../hooks/useBilling';
 
 const DashboardPage = () => {
   const navigate = useNavigate();
@@ -36,6 +37,17 @@ const DashboardPage = () => {
     setError,
   } = useRepository();
 
+  const {
+    planStatus,
+    loading: planLoading,
+    checkoutLoading,
+    error: billingError,
+    successMessage,
+    setError: setBillingError,
+    startCheckout,
+  } = useBilling();
+
+  const handleClearBillingError = useCallback(() => setBillingError(''), [setBillingError]);
   const handleClearError = useCallback(() => setError(''), [setError]);
 
   const handleToggleOverview = useCallback(() => {
@@ -68,9 +80,14 @@ const DashboardPage = () => {
 
     if (activeTab === DASHBOARD_TABS.PLANS) {
       return (
-        <ComingSoon
-          title="Plans & Pricing"
-          description="Flexible plans for individuals and teams. Manage your subscription and usage limits here."
+        <PlansPanel
+          planStatus={planStatus}
+          loading={planLoading}
+          checkoutLoading={checkoutLoading}
+          error={billingError}
+          successMessage={successMessage}
+          onCheckout={startCheckout}
+          onClearError={handleClearBillingError}
         />
       );
     }
@@ -126,6 +143,13 @@ const DashboardPage = () => {
     messages,
     sendMessage,
     isSending,
+    planLoading,
+    planStatus,
+    billingError,
+    successMessage,
+    checkoutLoading,
+    startCheckout,
+    handleClearBillingError,
   ]);
 
   return (
@@ -135,6 +159,7 @@ const DashboardPage = () => {
         onTabChange={setActiveTab}
         onToggleOverview={handleToggleOverview}
         showOverviewToggle={showOverviewToggle}
+        planStatus={planStatus}
       />
 
       <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden h-full">

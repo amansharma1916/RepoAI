@@ -3,6 +3,7 @@ import {
   getOrCreateChatSession,
   requireRepositoryAccess,
 } from "../repository/repository.access.js";
+import { cleanupExpiredFreeUserData } from "../billing/subscription.service.js";
 
 function mapMessage(row) {
   return {
@@ -17,6 +18,8 @@ export const getChatMessages = async (req, res) => {
   try {
     const { repository_id } = req.params;
     const userId = req.user.userId;
+
+    await cleanupExpiredFreeUserData(userId);
 
     const session = await getOrCreateChatSession(userId, repository_id);
 

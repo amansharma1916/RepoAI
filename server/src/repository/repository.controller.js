@@ -6,10 +6,17 @@ import {
   getOrCreateChatSession,
   requireRepositoryAccess,
 } from "./repository.access.js";
+import {
+  checkRepositoryLimit,
+  cleanupExpiredFreeUserData,
+  userAlreadyLinkedToRepository,
+} from "../billing/subscription.service.js";
 
 export const getUserRepositories = async (req, res) => {
   try {
     const userId = req.user.userId;
+
+    await cleanupExpiredFreeUserData(userId);
 
     const result = await pool.query(
       `
@@ -80,6 +87,23 @@ export const analyzeRepository = async (req, res) => {
         success: false,
         message: "Invalid GitHub URL format",
       });
+    }
+
+    await cleanupExpiredFreeUserData(userId);
+
+    const alreadyLinked = await userAlreadyLinkedToRepository(userId, githubUrl);
+    if (!alreadyLinked) {
+      const limitCheck = await checkRepositoryLimit(userId);
+      if (!limitCheck.allowed) {
+        return res.status(403).json({
+          success: false,
+          message: limitCheck.message,
+          code: "REPOSITORY_LIMIT_REACHED",
+          plan: limitCheck.plan,
+          used: limitCheck.used,
+          limit: limitCheck.limit,
+        });
+      }
     }
 
     const existingResult = await pool.query(

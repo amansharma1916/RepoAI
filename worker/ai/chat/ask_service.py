@@ -53,11 +53,15 @@ class AskService:
 
         if symbol and self._is_lookup_question(question):
 
-            return (
-                f"I found '{symbol[0]}'. "
-                f"It is a {symbol[1]} defined in "
-                f"'{symbol[2]}'."
-            )
+            response = "I found several relevant symbols in the codebase:\n\n"
+
+            for name, kind, path, lang in symbol:
+                response += (
+                    f"{name} is a {kind} defined in `{path}` "
+                    f"(language: {lang}).\n\n"
+                )
+
+            return response
 
         self.retrieval_service = (
             RetrievalService()
@@ -135,25 +139,27 @@ class AskService:
             if word not in self.STOP_WORDS
         ]
 
-        search_query = "".join(words)
+        print("words : ", words)
 
-        print("search query : ", search_query)
+        results = []
 
-        if len(search_query) < 2:
-            return None
+        for word in words:
+            if len(word) < 2:
+                continue
 
-        results = (
-            self.symbol_repository
-            .search_symbols(
-                repository_id,
-                search_query
+            result = (
+                self.symbol_repository
+                .search_symbols(
+                    repository_id,
+                    word
+                )
             )
-        )
+            
+            if result:
+                results.extend(result)
 
-        if results:
-            return results[0]
-
-        return None
+        print("results : ", results)
+        return results if results else None
 
 
 

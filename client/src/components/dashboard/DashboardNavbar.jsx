@@ -1,13 +1,13 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardTabs from './DashboardTabs';
-import { img } from 'framer-motion/client';
 
 const DashboardNavbar = memo(function DashboardNavbar({
   activeTab,
   onTabChange,
   onToggleOverview,
   showOverviewToggle,
+  planStatus,
 }) {
   const navigate = useNavigate();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -23,7 +23,9 @@ const DashboardNavbar = memo(function DashboardNavbar({
   })();
 
   const displayName = user?.name || user?.username || user?.email?.split('@')[0] || 'User';
-  const initials = user?.name?.split(' ').map(name => name[0]).join('');
+  const initials = user?.name?.split(' ').map((name) => name[0]).join('');
+  const isPro = planStatus?.plan === 'pro';
+  const planLabel = isPro ? 'Pro' : 'Free';
 
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
@@ -45,7 +47,6 @@ const DashboardNavbar = memo(function DashboardNavbar({
     <nav className="shrink-0 z-40 bg-dark-900/80 backdrop-blur-xl border-b border-white/5">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-[4.5rem] gap-4">
-          {/* Logo */}
           <div className="flex items-center gap-3 min-w-0">
             {showOverviewToggle && (
               <button
@@ -64,14 +65,23 @@ const DashboardNavbar = memo(function DashboardNavbar({
                 Repo<span className="text-accent">AI</span>
               </span>
             </a>
+            {planStatus && (
+              <span
+                className={`hidden sm:inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wide ${
+                  isPro
+                    ? 'bg-accent/10 text-accent border border-accent/30'
+                    : 'bg-dark-800 text-gray-400 border border-dark-600'
+                }`}
+              >
+                {planLabel}
+              </span>
+            )}
           </div>
 
-          {/* Tabs - center on desktop */}
           <div className="flex-1 flex justify-center min-w-0">
             <DashboardTabs activeTab={activeTab} onTabChange={onTabChange} />
           </div>
 
-          {/* Profile */}
           <div className="relative shrink-0" ref={dropdownRef}>
             <button
               type="button"
@@ -83,7 +93,11 @@ const DashboardNavbar = memo(function DashboardNavbar({
                 {displayName}
               </span>
               <div className="w-9 h-9 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center">
-                {user?.avatar_url ? <img src={user?.avatar_url} alt={initials} className="w-full h-full rounded-full" /> : <span className="text-xs font-bold text-accent">{initials}</span>}
+                {user?.avatar_url ? (
+                  <img src={user.avatar_url} alt={initials} className="w-full h-full rounded-full" />
+                ) : (
+                  <span className="text-xs font-bold text-accent">{initials}</span>
+                )}
               </div>
             </button>
 
@@ -93,6 +107,13 @@ const DashboardNavbar = memo(function DashboardNavbar({
                   <p className="text-sm font-medium text-white truncate">{displayName}</p>
                   {user?.email && (
                     <p className="text-xs text-gray-500 truncate mt-0.5">{user.email}</p>
+                  )}
+                  {planStatus && (
+                    <p className="text-xs mt-1">
+                      <span className={isPro ? 'text-accent' : 'text-gray-400'}>
+                        {planStatus.planName} plan
+                      </span>
+                    </p>
                   )}
                 </div>
                 <button

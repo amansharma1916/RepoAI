@@ -6,6 +6,7 @@ import repositoryRoutes from "./src/repository/repository.routes.js";
 import authRoutes from "./src/auth/auth.routes.js";
 import aiRoutes from "./src/ai/ai.routes.js";
 import chatRoutes from "./src/chat/chat.routes.js";
+import billingRoutes from "./src/billing/billing.routes.js";
 dotenv.config();
 
 const app = express();
@@ -52,6 +53,7 @@ app.use("/api/repository", repositoryRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api", billingRoutes);
 
 
 

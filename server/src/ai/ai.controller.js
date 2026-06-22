@@ -4,6 +4,10 @@ import {
   getOrCreateChatSession,
   requireRepositoryAccess,
 } from "../repository/repository.access.js";
+import {
+  checkMessageLimit,
+  cleanupExpiredFreeUserData,
+} from "../billing/subscription.service.js";
 
 function mapMessage(row) {
   return {
@@ -24,6 +28,20 @@ export const askQuestion = async (req, res) => {
       return res.status(400).json({
         success: false,
         message: "Question is required",
+      });
+    }
+
+    await cleanupExpiredFreeUserData(userId);
+
+    const limitCheck = await checkMessageLimit(userId, repository_id);
+    if (!limitCheck.allowed) {
+      return res.status(403).json({
+        success: false,
+        message: limitCheck.message,
+        code: "MESSAGE_LIMIT_REACHED",
+        plan: limitCheck.plan,
+        used: limitCheck.used,
+        limit: limitCheck.limit,
       });
     }
 

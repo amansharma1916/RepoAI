@@ -183,7 +183,8 @@ export function useRepository() {
         await refreshRepositories();
         navigate(`/dashboard/chat/${repoId}`, { replace: true });
       } catch (err) {
-        setError(getApiErrorMessage(err, 'Failed to analyze repository. Please try again.'));
+        const message = getApiErrorMessage(err, 'Failed to analyze repository. Please try again.');
+        setError(message);
         setStatus(DASHBOARD_STATUS.EMPTY);
         setRepositoryUrl('');
         setRepositoryId(null);
@@ -236,14 +237,19 @@ export function useRepository() {
         });
 
         refreshRepositories();
-      } catch {
+      } catch (err) {
+        const limitMessage = getApiErrorMessage(
+          err,
+          'Sorry, something went wrong. Please try again.',
+        );
+
         setMessages((prev) => [
           ...prev.filter((msg) => msg.id !== optimisticUserMessage.id),
           optimisticUserMessage,
           {
             id: `msg_${Date.now()}_error`,
             role: 'assistant',
-            content: 'Sorry, something went wrong. Please try again.',
+            content: limitMessage,
             timestamp: new Date().toISOString(),
           },
         ]);
