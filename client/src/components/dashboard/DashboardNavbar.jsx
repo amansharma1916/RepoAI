@@ -42,7 +42,7 @@ const DashboardNavbar = memo(function DashboardNavbar({
   }, []);
 
   return (
-    <nav className="sticky top-0 z-40 bg-dark-900/80 backdrop-blur-xl border-b border-white/5">
+    <nav className="shrink-0 z-40 bg-dark-900/80 backdrop-blur-xl border-b border-white/5">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 lg:h-[4.5rem] gap-4">
           {/* Logo */}

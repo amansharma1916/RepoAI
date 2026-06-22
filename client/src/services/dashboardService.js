@@ -1,96 +1,102 @@
-// TODO: Replace mock data with real API integration
-
-const MOCK_OVERVIEW = {
-  name: 'react',
-  id: 'repo_8f3a2b1c',
-  primaryLanguage: 'JavaScript',
-  framework: 'React',
-  filesCount: 1842,
-  symbolsCount: 12450,
-  dependenciesCount: 87,
-  analysisStatus: 'Complete',
-};
-
-const MOCK_CHAT_HISTORY = [
-  {
-    id: 'msg_1',
-    role: 'user',
-    content: 'What authentication system does this repository use?',
-    timestamp: '2026-06-21T10:00:00Z',
-  },
-  {
-    id: 'msg_2',
-    role: 'assistant',
-    content:
-      'This repository uses JWT-based authentication with middleware validation. Token generation happens in the auth service layer, and protected routes are guarded via Express middleware in auth.middleware.ts.',
-    timestamp: '2026-06-21T10:00:05Z',
-  },
-  {
-    id: 'msg_3',
-    role: 'user',
-    content: 'How is state management handled in the frontend?',
-    timestamp: '2026-06-21T10:01:00Z',
-  },
-  {
-    id: 'msg_4',
-    role: 'assistant',
-    content:
-      'The frontend uses a combination of React Context and custom hooks for state management. Global app state is managed through providers, while component-level state uses useState and useReducer patterns.',
-    timestamp: '2026-06-21T10:01:08Z',
-  },
-];
-
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+import serverClient from '../apiClient/serverClient';
 
 /**
- * TODO: Connect to Repository Analysis API
- * POST /api/repositories/analyze
+ * POST /api/repository/analyze
  */
-export async function analyzeRepository(repositoryUrl) {
-  await delay(2500);
-  return {
-    success: true,
-    repositoryUrl,
-    status: 'analyzed',
-  };
+export async function analyzeRepository(githubUrl) {
+  const response = await serverClient.post('/repository/analyze', { githubUrl });
+  return response.data;
 }
 
 /**
- * TODO: Replace with Repository Overview API
- * GET /api/repositories/:id/overview
+ * GET /api/repository/mine
  */
-export async function getRepositoryOverview(repositoryUrl) {
-  await delay(300);
-  const repoName = repositoryUrl.split('/').pop() || 'repository';
+export async function getUserRepositories() {
+  const response = await serverClient.get('/repository/mine');
+  return response.data;
+}
+
+/**
+ * GET /api/repository/summary/:id
+ */
+export async function getRepositorySummary(repositoryId) {
+  const response = await serverClient.get(`/repository/summary/${repositoryId}`);
+  return response.data;
+}
+
+/**
+ * GET /api/repository/architecture/:id
+ */
+export async function getRepositoryArchitecture(repositoryId) {
+  const response = await serverClient.get(`/repository/architecture/${repositoryId}`);
+  return response.data;
+}
+
+/**
+ * GET /api/chat/:repositoryId/messages
+ */
+export async function getChatMessages(repositoryId) {
+  const response = await serverClient.get(`/chat/${repositoryId}/messages`);
+  return response.data;
+}
+
+export function mapArchitectureOverview(analyzeResult, architecture) {
+  const { repository, worker } = analyzeResult;
+  const repoName = repository.github_url?.split('/').pop() || 'repository';
+  const workerStats = worker?.stats ?? {};
+
   return {
-    ...MOCK_OVERVIEW,
+    repositoryId: repository.id,
+    githubUrl: repository.github_url,
+    status: repository.status,
     name: repoName,
-    repositoryUrl,
+    frameworks: workerStats.frameworks ?? worker?.frameworks ?? [],
+    languages: workerStats.languages ?? {},
+    totalFiles: worker?.total_files ?? workerStats.total_files,
+    statistics: architecture.statistics ?? {},
+    entryPoints: architecture.entry_points ?? [],
+    frontend: architecture.frontend ?? {},
+    backend: architecture.backend ?? {},
   };
 }
 
-/**
- * TODO: Connect Ask Repository API
- * POST /api/repositories/:id/ask
- */
-export async function askRepositoryQuestion(repositoryUrl, question) {
-  await delay(800);
+export function mapOverviewFromSummary(summary, architecture) {
+  const { repository, stats, technologies } = summary;
+  const repoName = repository.github_url?.split('/').pop() || 'repository';
+
   return {
-    id: `msg_${Date.now()}`,
-    role: 'assistant',
-    content: `Based on my analysis of ${repositoryUrl.split('/').pop()}, here's what I found regarding your question: "${question}". The codebase follows modern patterns with well-structured modules and clear separation of concerns.`,
-    timestamp: new Date().toISOString(),
+    repositoryId: repository.id,
+    githubUrl: repository.github_url,
+    status: repository.status,
+    name: repoName,
+    frameworks: technologies ?? [],
+    languages: stats?.languages ?? {},
+    totalFiles: stats?.total_files,
+    statistics: architecture.statistics ?? {},
+    entryPoints: architecture.entry_points ?? [],
+    frontend: architecture.frontend ?? {},
+    backend: architecture.backend ?? {},
   };
 }
 
-/**
- * TODO: Replace with Chat History API
- * GET /api/repositories/:id/chat
- */
-export async function getChatHistory(repositoryUrl) {
-  await delay(200);
-  return MOCK_CHAT_HISTORY.map((msg) => ({
-    ...msg,
-    repositoryUrl,
-  }));
+export async function askRepositoryQuestion(repositoryId, question) {
+  const response = await serverClient.post(`/ai/ask/${repositoryId}`, { question });
+  return response.data;
+}
+
+export function getApiErrorMessage(error, fallback = 'Something went wrong. Please try again.') {
+  return (
+    error?.response?.data?.message ||
+    error?.response?.data?.error ||
+    error?.message ||
+    fallback
+  );
+}
+
+export function getRepositoryDisplayName(githubUrl) {
+  if (!githubUrl) return 'Repository';
+  const parts = githubUrl.replace(/\/$/, '').split('/');
+  const name = parts[parts.length - 1];
+  const owner = parts[parts.length - 2];
+  return owner && name ? `${owner}/${name}` : name || githubUrl;
 }

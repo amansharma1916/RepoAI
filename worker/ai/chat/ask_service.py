@@ -139,7 +139,7 @@ class AskService:
 
         print("search query : ", search_query)
 
-        if len(search_query) < 3:
+        if len(search_query) < 2:
             return None
 
         results = (

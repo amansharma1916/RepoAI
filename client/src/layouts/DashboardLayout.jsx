@@ -3,7 +3,7 @@ import HeroBackground from '../components/HeroBackground';
 
 const DashboardLayout = ({ children }) => {
   return (
-    <div className="relative min-h-screen bg-dark-900 overflow-hidden flex flex-col">
+    <div className="relative h-screen bg-dark-900 overflow-hidden flex flex-col">
       <HeroBackground />
 
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -23,7 +23,7 @@ const DashboardLayout = ({ children }) => {
         }}
       />
 
-      <div className="relative z-10 flex flex-col min-h-screen">{children}</div>
+      <div className="relative z-10 flex flex-col h-full min-h-0 overflow-hidden">{children}</div>
     </div>
   );
 };

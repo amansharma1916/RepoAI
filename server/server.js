@@ -4,6 +4,8 @@ import pool from "./src/database/db.js";
 import cors from "cors";
 import repositoryRoutes from "./src/repository/repository.routes.js";
 import authRoutes from "./src/auth/auth.routes.js";
+import aiRoutes from "./src/ai/ai.routes.js";
+import chatRoutes from "./src/chat/chat.routes.js";
 dotenv.config();
 
 const app = express();
@@ -37,7 +39,7 @@ app.get("/health", async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
+    
     res.status(500).json({
       status: "error",
       database: "disconnected",
@@ -48,6 +50,8 @@ app.get("/health", async (req, res) => {
 
 app.use("/api/repository", repositoryRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/chat", chatRoutes);
 
 
 

@@ -44,6 +44,7 @@ function App() {
 
         <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/dashboard/chat/:repositoryId" element={<DashboardPage />} />
         </Route>
 
 

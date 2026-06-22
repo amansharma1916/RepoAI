@@ -1,10 +1,12 @@
 import React, { useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../layouts/DashboardLayout';
 import DashboardNavbar from '../components/dashboard/DashboardNavbar';
 import OverviewPanel from '../components/dashboard/OverviewPanel';
 import EmptyState from '../components/dashboard/EmptyState';
 import LoadingState from '../components/dashboard/LoadingState';
 import ChatContainer from '../components/dashboard/ChatContainer';
+import RepositoryList from '../components/dashboard/RepositoryList';
 import ComingSoon from '../components/dashboard/ComingSoon';
 import {
   DASHBOARD_STATUS,
@@ -13,11 +15,15 @@ import {
 } from '../hooks/useRepository';
 
 const DashboardPage = () => {
+  const navigate = useNavigate();
   const {
     status,
     repositoryUrl,
+    repositoryId,
     overview,
     messages,
+    repositories,
+    repositoriesLoading,
     activeTab,
     isSending,
     error,
@@ -26,6 +32,7 @@ const DashboardPage = () => {
     setOverviewOpen,
     submitRepository,
     sendMessage,
+    selectRepository,
     setError,
   } = useRepository();
 
@@ -35,15 +42,26 @@ const DashboardPage = () => {
     setOverviewOpen((prev) => !prev);
   }, [setOverviewOpen]);
 
+  const handleAddNewRepository = useCallback(() => {
+    setActiveTab(DASHBOARD_TABS.CHAT);
+    navigate('/dashboard');
+  }, [navigate, setActiveTab]);
+
   const showOverviewToggle = status !== DASHBOARD_STATUS.EMPTY;
-  const isOverviewEmpty = status === DASHBOARD_STATUS.EMPTY || status === DASHBOARD_STATUS.ANALYZING;
+  const isOverviewEmpty =
+    status === DASHBOARD_STATUS.EMPTY ||
+    status === DASHBOARD_STATUS.ANALYZING ||
+    status === DASHBOARD_STATUS.LOADING;
 
   const workspaceContent = useMemo(() => {
     if (activeTab === DASHBOARD_TABS.REPOSITORY) {
       return (
-        <ComingSoon
-          title="Repository Explorer"
-          description="Browse files, trace dependencies, and visualize architecture — all from one place. This feature is under development."
+        <RepositoryList
+          repositories={repositories}
+          loading={repositoriesLoading}
+          activeRepositoryId={repositoryId}
+          onSelect={selectRepository}
+          onAddNew={handleAddNewRepository}
         />
       );
     }
@@ -71,17 +89,36 @@ const DashboardPage = () => {
       return <LoadingState />;
     }
 
+    if (status === DASHBOARD_STATUS.LOADING) {
+      return (
+        <div className="flex-1 flex items-center justify-center animate-fade-in">
+          <div className="flex items-center gap-2 text-gray-400 text-sm">
+            <span className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+            Loading chat...
+          </div>
+        </div>
+      );
+    }
+
     return (
       <ChatContainer
         repositoryUrl={repositoryUrl}
+        repositoryId={repositoryId}
+        repositories={repositories}
         messages={messages}
         onSendMessage={sendMessage}
+        onSelectRepository={selectRepository}
         isSending={isSending}
       />
     );
   }, [
     activeTab,
     status,
+    repositories,
+    repositoriesLoading,
+    repositoryId,
+    selectRepository,
+    handleAddNewRepository,
     submitRepository,
     error,
     handleClearError,
@@ -100,8 +137,7 @@ const DashboardPage = () => {
         showOverviewToggle={showOverviewToggle}
       />
 
-      <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
-        {/* Mobile overview drawer */}
+      <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden h-full">
         {overviewOpen && (
           <div className="lg:hidden fixed inset-0 z-30">
             <button
@@ -110,19 +146,17 @@ const DashboardPage = () => {
               onClick={() => setOverviewOpen(false)}
               aria-label="Close overview"
             />
-            <div className="absolute top-16 left-0 right-0 bottom-0 p-4 animate-slide-up">
+            <div className="absolute top-16 left-0 right-0 bottom-0 p-4 animate-slide-up flex flex-col min-h-0">
               <OverviewPanel overview={overview} isEmpty={isOverviewEmpty} />
             </div>
           </div>
         )}
 
-        {/* Desktop / tablet overview sidebar */}
-        <div className="hidden lg:block shrink-0 w-64 xl:w-72 p-4 lg:p-5 lg:pr-0">
+        <div className="hidden lg:flex shrink-0 w-80 xl:w-96 p-4 lg:p-5 lg:pr-0 min-h-0 self-stretch">
           <OverviewPanel overview={overview} isEmpty={isOverviewEmpty} />
         </div>
 
-        {/* Mobile overview collapsed card */}
-        <div className="lg:hidden px-4 pt-3">
+        <div className="lg:hidden shrink-0 px-4 pt-3">
           {!overviewOpen && showOverviewToggle && (
             <button
               type="button"
@@ -140,8 +174,7 @@ const DashboardPage = () => {
           )}
         </div>
 
-        {/* Main workspace */}
-        <main className="flex-1 flex flex-col min-h-0 min-w-0 p-4 lg:p-5">
+        <main className="flex-1 flex flex-col min-h-0 min-w-0 p-4 lg:p-5 overflow-hidden">
           <div className="flex-1 flex flex-col min-h-0 bg-dark-800/40 backdrop-blur-sm border border-dark-600 rounded-2xl overflow-hidden">
             {workspaceContent}
           </div>

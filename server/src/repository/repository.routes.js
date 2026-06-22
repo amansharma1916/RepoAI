@@ -1,11 +1,22 @@
 import express from "express";
-import { analyzeRepository , getRepositoryOverview , getRepositoryTree, getRepositoryFiles} from "./repository.controller.js";
+import { authenticate } from "../middleware/auth.middleware.js";
+import {
+  analyzeRepository,
+  getRepositoryOverview,
+  getArchitecture,
+  getRepositoryTree,
+  getRepositoryFiles,
+  getUserRepositories,
+  requireRepositoryAccess,
+} from "./repository.controller.js";
 
 const router = express.Router();
 
-router.post("/analyze", analyzeRepository);
-router.get("/summary/:id", getRepositoryOverview);
-router.get("/tree/:id", getRepositoryTree);
-router.get("/files/:id", getRepositoryFiles);
+router.get("/mine", authenticate, getUserRepositories);
+router.post("/analyze", authenticate, analyzeRepository);
+router.get("/summary/:id", authenticate, requireRepositoryAccess, getRepositoryOverview);
+router.get("/tree/:id", authenticate, requireRepositoryAccess, getRepositoryTree);
+router.get("/files/:id", authenticate, requireRepositoryAccess, getRepositoryFiles);
+router.get("/architecture/:id", authenticate, requireRepositoryAccess, getArchitecture);
 
 export default router;

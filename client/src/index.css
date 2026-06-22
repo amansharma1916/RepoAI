@@ -18,6 +18,31 @@
 }
 
 @layer components {
+  .theme-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 212, 255, 0.45) rgba(18, 18, 26, 0.65);
+  }
+
+  .theme-scrollbar::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .theme-scrollbar::-webkit-scrollbar-track {
+    background: rgba(18, 18, 26, 0.65);
+    border-radius: 999px;
+  }
+
+  .theme-scrollbar::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(0, 212, 255, 0.7), rgba(0, 168, 204, 0.45));
+    border: 2px solid rgba(18, 18, 26, 0.85);
+    border-radius: 999px;
+  }
+
+  .theme-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(102, 229, 255, 0.9), rgba(0, 212, 255, 0.6));
+  }
+
   .gradient-text {
     @apply bg-clip-text text-transparent;
     background-image: linear-gradient(135deg, #00d4ff 0%, #ffffff 50%, #00d4ff 100%);
