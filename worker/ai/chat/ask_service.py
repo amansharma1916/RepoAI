@@ -156,7 +156,7 @@ class AskService:
             )
             
             if result:
-                results.extend(result)
+                results.append(result[0])
 
         print("results : ", results)
         return results if results else None
