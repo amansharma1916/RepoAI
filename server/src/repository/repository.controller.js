@@ -1,15 +1,125 @@
 import pool from "../database/db.js";
 import workerClient from "../workerClient/workerClient.js";
 import buildTree from "./helper/buildTree.js";
+import {
+  linkUserToRepository,
+  getOrCreateChatSession,
+  requireRepositoryAccess,
+} from "./repository.access.js";
+import {
+  checkRepositoryLimit,
+  cleanupExpiredFreeUserData,
+  userAlreadyLinkedToRepository,
+} from "../billing/subscription.service.js";
+
+export const getUserRepositories = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+
+    await cleanupExpiredFreeUserData(userId);
+
+    const result = await pool.query(
+      `
+      SELECT
+        r.id,
+        r.github_url,
+        r.status,
+        ur.created_at AS added_at,
+        cs.updated_at AS last_active_at,
+        (
+          SELECT cm.content
+          FROM chat_messages cm
+          WHERE cm.session_id = cs.id
+          ORDER BY cm.created_at DESC
+          LIMIT 1
+        ) AS last_message,
+        (
+          SELECT cm.created_at
+          FROM chat_messages cm
+          WHERE cm.session_id = cs.id
+          ORDER BY cm.created_at DESC
+          LIMIT 1
+        ) AS last_message_at
+      FROM user_repositories ur
+      JOIN repositories r ON r.id = ur.repository_id
+      LEFT JOIN chat_sessions cs
+        ON cs.user_id = ur.user_id AND cs.repository_id = r.id
+      WHERE ur.user_id = $1
+      ORDER BY COALESCE(
+        (
+          SELECT MAX(cm.created_at)
+          FROM chat_messages cm
+          WHERE cm.session_id = cs.id
+        ),
+        ur.created_at
+      ) DESC
+      `,
+      [userId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      repositories: result.rows,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch repositories",
+    });
+  }
+};
 
 export const analyzeRepository = async (req, res) => {
   try {
     const { githubUrl } = req.body;
+    const userId = req.user.userId;
 
     if (!githubUrl) {
       return res.status(400).json({
         success: false,
         message: "GitHub URL is required",
+      });
+    }
+
+    if (!/^https?:\/\/github\.com\/.+\/.+/.test(githubUrl)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid GitHub URL format",
+      });
+    }
+
+    await cleanupExpiredFreeUserData(userId);
+
+    const alreadyLinked = await userAlreadyLinkedToRepository(userId, githubUrl);
+    if (!alreadyLinked) {
+      const limitCheck = await checkRepositoryLimit(userId);
+      if (!limitCheck.allowed) {
+        return res.status(403).json({
+          success: false,
+          message: limitCheck.message,
+          code: "REPOSITORY_LIMIT_REACHED",
+          plan: limitCheck.plan,
+          used: limitCheck.used,
+          limit: limitCheck.limit,
+        });
+      }
+    }
+
+    const existingResult = await pool.query(
+      `SELECT * FROM repositories WHERE github_url = $1`,
+      [githubUrl]
+    );
+
+    if (existingResult.rows[0]) {
+      const repo = existingResult.rows[0];
+      await linkUserToRepository(userId, repo.id);
+      await getOrCreateChatSession(userId, repo.id);
+
+      return res.status(200).json({
+        success: true,
+        repository: repo,
+        existing: true,
       });
     }
 
@@ -24,24 +134,30 @@ export const analyzeRepository = async (req, res) => {
 
     const repo = result.rows[0];
 
-    const workerResponse = await workerClient.post("/repository/analyze-repository", {
+    const workerResponse = await workerClient.post("/repository/clone", {
       githubUrl: repo.github_url,
-      repositoryId: repo.id
+      repositoryId: repo.id,
     });
+
+    await workerClient.post(`/repo-analysis/analyze/${repo.id}`);
 
     await pool.query(
       `
-  UPDATE repositories
-  SET status = 'completed'
-  WHERE id = $1
-  `,
+      UPDATE repositories
+      SET status = 'completed'
+      WHERE id = $1
+      `,
       [repo.id]
     );
 
+    await linkUserToRepository(userId, repo.id);
+    await getOrCreateChatSession(userId, repo.id);
+
     res.status(201).json({
       success: true,
-      repository: repo,
+      repository: { ...repo, status: "completed" },
       worker: workerResponse.data,
+      existing: false,
     });
   } catch (error) {
     console.error(error);
@@ -63,7 +179,6 @@ export const analyzeRepository = async (req, res) => {
 export const getRepositoryOverview = async (req, res) => {
   try {
     const { id } = req.params;
-
 
     const repositoryQuery = `
     SELECT *
@@ -97,18 +212,13 @@ export const getRepositoryOverview = async (req, res) => {
         (tech) => tech.technology_name
       ),
     });
-    
-
   } catch (error) {
     console.error(error);
 
-    
     return res.status(500).json({
       success: false,
       message: "Failed to fetch repository overview",
     });
-    
-
   }
 };
 
@@ -126,9 +236,7 @@ export const getRepositoryTree = async (req, res) => {
       [id]
     );
 
-    const paths = result.rows.map(
-      (row) => row.file_path
-    );
+    const paths = result.rows.map((row) => row.file_path);
 
     const tree = buildTree(paths);
 
@@ -142,3 +250,54 @@ export const getRepositoryTree = async (req, res) => {
     });
   }
 };
+
+export const getRepositoryFiles = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await pool.query(
+      `
+  SELECT
+    id,
+    file_name,
+    file_path,
+    extension,
+    size
+  FROM repository_files
+  WHERE repository_id = $1
+  ORDER BY file_path
+  `,
+      [id]
+    );
+
+    return res.status(200).json({
+      success: true,
+      count: result.rowCount,
+      files: result.rows,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch files",
+    });
+  }
+};
+
+export const getArchitecture = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const result = await workerClient.get(`/repo-analysis/architecture/${id}`);
+    return res.status(200).json(result.data);
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch architecture",
+    });
+  }
+};
+
+export { requireRepositoryAccess };
