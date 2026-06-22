@@ -152,6 +152,11 @@ const DashboardPage = () => {
     handleClearBillingError,
   ]);
 
+  // Handler for close on mobile overview close button
+  const handleOverviewClose = useCallback(() => {
+    setOverviewOpen(false);
+  }, [setOverviewOpen]);
+
   return (
     <DashboardLayout>
       <DashboardNavbar
@@ -165,21 +170,58 @@ const DashboardPage = () => {
       <div className="flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden h-full">
         {overviewOpen && (
           <div className="lg:hidden fixed inset-0 z-30">
+            {/* Background overlay remains for blur and dismiss if needed */}
             <button
               type="button"
               className="absolute inset-0 bg-dark-900/60 backdrop-blur-sm"
-              onClick={() => setOverviewOpen(false)}
+              onClick={handleOverviewClose}
               aria-label="Close overview"
+              tabIndex={-1}
             />
-            <div className="absolute top-16 left-0 right-0 bottom-0 p-4 animate-slide-up flex flex-col min-h-0">
-              <OverviewPanel overview={overview} isEmpty={isOverviewEmpty} />
+            <div className="absolute top-16 left-0 right-0 bottom-0 p-4 animate-slide-up flex flex-col min-h-0 z-40">
+              <div className="bg-dark-800/70 backdrop-blur-xl border border-dark-600 rounded-2xl overflow-hidden h-full min-h-0 flex flex-col glow-border relative">
+                <div className="shrink-0 px-5 py-4 border-b border-dark-600 relative flex items-center justify-between">
+                  <div
+                    className="flex items-center gap-2 cursor-pointer select-none"
+                    style={{ userSelect: 'none' }}
+                    onClick={handleOverviewClose}
+                  >
+                    <div className="w-2 h-2 rounded-full bg-accent animate-pulse" />
+                    <h2 className="text-sm font-small text-white tracking-wider">
+                      {repositoryUrl.toLowerCase()}
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    className="ml-4 p-1.5 rounded hover:bg-dark-600 focus:bg-dark-700 border border-transparent hover:border-dark-500 focus:outline-none transition-colors"
+                    aria-label="Close overview panel"
+                    onClick={handleOverviewClose}
+                    style={{ marginRight: -8 }}
+                  >
+                    <svg
+                      className="w-6 h-6 text-gray-400"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                {/* OverviewPanel body */}
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain p-5 theme-scrollbar">
+                  <OverviewPanel overview={overview} isEmpty={isOverviewEmpty} />
+                </div>
+              </div>
             </div>
           </div>
         )}
 
-        <div className="hidden lg:flex shrink-0 w-80 xl:w-96 p-4 lg:p-5 lg:pr-0 min-h-0 self-stretch">
+        <div className="hidden lg:flex shrink-0 w-[400px] xl:w-[500px] p-4 lg:p-5 lg:pr-0 min-h-0 self-stretch">
           <OverviewPanel overview={overview} isEmpty={isOverviewEmpty} />
         </div>
+   
 
         <div className="lg:hidden shrink-0 px-4 pt-3">
           {!overviewOpen && showOverviewToggle && (
