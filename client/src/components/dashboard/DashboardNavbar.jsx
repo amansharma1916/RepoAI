@@ -17,10 +17,14 @@ const DashboardNavbar = memo(function DashboardNavbar({
     try {
       const stored = localStorage.getItem('user');
       return stored ? JSON.parse(stored) : null;
+      console.log(stored);
     } catch {
+      console.log('Error parsing user');
       return null;
     }
   })();
+
+
 
   const displayName = user?.name || user?.username || user?.email?.split('@')[0] || 'User';
   const initials = user?.name?.split(' ').map((name) => name[0]).join('');
@@ -94,7 +98,8 @@ const DashboardNavbar = memo(function DashboardNavbar({
               </span>
               <div className="w-9 h-9 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center">
                 {user?.avatar_url ? (
-                  <img src={user.avatar_url} alt={initials} className="w-full h-full rounded-full" />
+                  
+                  <img src={user.avatar_url} alt={"n/a"} className="w-full h-full rounded-full" />
                 ) : (
                   <span className="text-xs font-bold text-accent">{initials}</span>
                 )}
