@@ -1,8 +1,7 @@
-worker/__pycache__/app.cpython-313.pyc
-worker/output.txt
 RepoAI_Phase1_to_Phase2_Architecture.pdf
 client/bolt_ui.zip
-client/.bolt
+client/.bolt/config.json
+demo/2026-06-23 13-23-23.mp4
+worker/output.txt
 client/public/logo.png
 client/.env
-demo
