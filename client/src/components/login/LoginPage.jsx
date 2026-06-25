@@ -5,6 +5,7 @@ import HeroBackground from "../HeroBackground";
 import { GoogleLogin } from "@react-oauth/google";
 import { googleAuth, loginUser } from "../../services/auth.service";
 import { useState } from "react";
+import ServiceUnavailablePopup from "../ServiceUnavailablePopup";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const LoginPage = () => {
     password: "",
   });
   const [loading, setLoading] = useState(false);
+  const [showServicePopup, setShowServicePopup] = useState(false);
   
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -40,6 +42,7 @@ const LoginPage = () => {
       
     } catch (error) {
       console.error("Backend Authentication Failed:", error);
+      setShowServicePopup(true);
     }
   };
 
@@ -63,6 +66,7 @@ const LoginPage = () => {
       }
     } catch (error) {
       console.error("Login Error:", error);
+      setShowServicePopup(true);
     } finally {
       setLoading(false);
     }
@@ -93,6 +97,10 @@ const LoginPage = () => {
       />
 
       <div className="relative z-10 min-h-screen flex">
+        <ServiceUnavailablePopup
+          isOpen={showServicePopup}
+          onClose={() => setShowServicePopup(false)}
+        />
         {/* LEFT SIDE */}
         <div className="hidden lg:flex w-[70%] relative items-center px-16 overflow-hidden">
           {/* Watermark */}
