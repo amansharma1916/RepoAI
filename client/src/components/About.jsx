@@ -154,7 +154,7 @@ const About = () => {
                 </div>
 
                 <p className="text-gray-400">
-                  hello@repoai.dev
+                  amansharmayt19@gmail.com
                 </p>
               </div>
 
@@ -172,14 +172,14 @@ const About = () => {
                 </div>
 
                 <p className="text-gray-400">
-                  support@repoai.dev
+                  amansharmayt19@gmail.com
                 </p>
               </div>
 
             </div>
 
             {/* Contact Form */}
-            <div id="contact" className="mt-8">
+            {/* <div id="contact" className="mt-8">
               <form className="space-y-4">
 
                 <input
@@ -208,7 +208,7 @@ const About = () => {
                 </button>
 
               </form>
-            </div>
+            </div> */}
 
           </div>
         </div>
