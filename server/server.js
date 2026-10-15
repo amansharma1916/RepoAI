@@ -31,7 +31,7 @@ app.get("/", (req, res) => {
 app.get("/health", async (req, res) => {
   try {
     // const result = await pool.query("create table server_test (name varchar(50));");
-    const result = await pool.query("select * from server_test;");
+    const result = await pool.query("select * from test;");
 
     res.json({
       status: "healthy",

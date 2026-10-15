@@ -6,6 +6,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import { googleAuth, loginUser } from "../../services/auth.service";
 import { useState } from "react";
 import ServiceUnavailablePopup from "../ServiceUnavailablePopup";
+import { SHOW_SERVICE_UNAVAILABLE_POPUP } from "../../config/maintenance";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -42,7 +43,9 @@ const LoginPage = () => {
       
     } catch (error) {
       console.error("Backend Authentication Failed:", error);
-      setShowServicePopup(true);
+      // Production-only popup — disabled locally via VITE_ENABLE_SERVICE_POPUP=false.
+      // To remount for production: set VITE_ENABLE_SERVICE_POPUP=true.
+      if (SHOW_SERVICE_UNAVAILABLE_POPUP) setShowServicePopup(true);
     }
   };
 
@@ -66,7 +69,8 @@ const LoginPage = () => {
       }
     } catch (error) {
       console.error("Login Error:", error);
-      setShowServicePopup(true);
+      // Production-only popup — disabled locally via VITE_ENABLE_SERVICE_POPUP=false.
+      if (SHOW_SERVICE_UNAVAILABLE_POPUP) setShowServicePopup(true);
     } finally {
       setLoading(false);
     }
@@ -97,10 +101,15 @@ const LoginPage = () => {
       />
 
       <div className="relative z-10 min-h-screen flex">
-        <ServiceUnavailablePopup
-          isOpen={showServicePopup}
-          onClose={() => setShowServicePopup(false)}
-        />
+        {/* PRODUCTION-ONLY: ServiceUnavailablePopup mounted behind flag.
+            Local: VITE_ENABLE_SERVICE_POPUP=false → never renders.
+            Remount: VITE_ENABLE_SERVICE_POPUP=true → renders on auth failure. */}
+        {SHOW_SERVICE_UNAVAILABLE_POPUP && (
+          <ServiceUnavailablePopup
+            isOpen={showServicePopup}
+            onClose={() => setShowServicePopup(false)}
+          />
+        )}
         {/* LEFT SIDE */}
         <div className="hidden lg:flex w-[70%] relative items-center px-16 overflow-hidden">
           {/* Watermark */}
